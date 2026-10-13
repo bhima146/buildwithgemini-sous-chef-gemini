@@ -4,6 +4,8 @@
 
 ![Sous-Chef Gemini Live Demo](demo.gif)
 
+> 🎥 **Full Demo with Upbeat Lo-Fi Audio**: [Watch or Download `demo_video.mp4`](demo_video.mp4)
+
 ---
 
 ## What the Agent Actually Does
