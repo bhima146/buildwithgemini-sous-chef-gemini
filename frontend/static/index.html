@@ -7,6 +7,8 @@
 <!-- Optional: used only to draw A2UI Icon components. If it can't load (offline/
      corp network), icons fall back to showing their name as text. -->
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined">
+<!-- Markdown parser for rich formatted text, ingredients, and instructions -->
+<script src="https://cdn.jsdelivr.net/npm/marked@15.0.7/marked.min.js"></script>
 <style>
   :root { --accent:#e65100; --accent-hover:#bf360c; --bg:#faf8f5; --border:#e7ded7; --surface:#ffffff; --text:#2c2523; --text-muted:#786f6a; }
   * { box-sizing:border-box; }
@@ -14,27 +16,84 @@
   header { background:linear-gradient(135deg, #e65100, #d84315); color:#fff; padding:1rem 1.4rem; font-weight:700; font-size:1.15rem; display:flex; align-items:center; justify-content:space-between; box-shadow:0 2px 6px rgba(0,0,0,.08); }
   .header-brand { display:flex; align-items:center; gap:.6rem; }
   .header-badge { font-size:.75rem; background:rgba(255,255,255,.2); padding:.2rem .6rem; border-radius:12px; font-weight:500; letter-spacing:.02em; }
-  #log { flex:1; overflow-y:auto; padding:1.4rem 1rem; max-width:820px; width:100%; margin:0 auto; display:flex; flex-direction:column; gap:1.1rem; }
+  #log { flex:1; overflow-y:auto; padding:1.4rem 1rem; max-width:840px; width:100%; margin:0 auto; display:flex; flex-direction:column; gap:1.2rem; }
   
   /* Dialogue row styling */
   .msg-row { display:flex; gap:.75rem; align-items:flex-start; animation:fadeIn .2s ease-out; }
   @keyframes fadeIn { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
   .msg-row.user { flex-direction:row-reverse; }
-  .avatar { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.15rem; flex-shrink:0; box-shadow:0 1px 3px rgba(0,0,0,.1); }
-  .msg-row.agent .avatar { background:#fff; border:1px solid var(--border); }
+  .avatar { width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0; box-shadow:0 2px 5px rgba(0,0,0,.08); }
+  .msg-row.agent .avatar { background:#fff; border:1px solid #f0cfb3; }
   .msg-row.user .avatar { background:#ffeedd; border:1px solid #ffd5b0; }
   
-  .msg-content { display:flex; flex-direction:column; max-width:82%; }
-  .msg-row.user .msg-content { align-items:flex-end; }
-  .msg-author { font-size:.78rem; font-weight:600; color:var(--text-muted); margin-bottom:.25rem; padding:0 .2rem; }
+  .msg-content { display:flex; flex-direction:column; max-width:86%; width:100%; }
+  .msg-row.user .msg-content { align-items:flex-end; max-width:78%; width:auto; }
+  .msg-author { font-size:.8rem; font-weight:600; color:var(--text-muted); margin-bottom:.3rem; padding:0 .2rem; }
   
-  .bubble { padding:.75rem 1rem; border-radius:16px; background:#fff; border:1px solid var(--border); text-align:left; line-height:1.55; box-shadow:0 1px 2px rgba(0,0,0,.03); white-space:pre-wrap; font-size:.95rem; }
+  .bubble { padding:1rem 1.25rem; border-radius:16px; background:#fff; border:1px solid #ebdcd0; text-align:left; line-height:1.6; box-shadow:0 2px 8px rgba(0,0,0,.04); font-size:.96rem; color:#2c2523; }
   .msg-row.agent .bubble { border-top-left-radius:4px; }
-  .msg-row.user .bubble { background:linear-gradient(135deg, #e65100, #f4511e); color:#fff; border:none; border-top-right-radius:4px; box-shadow:0 2px 5px rgba(230,81,0,.25); }
+  .msg-row.user .bubble { background:linear-gradient(135deg, #e65100, #f4511e); color:#fff; border:none; border-top-right-radius:4px; box-shadow:0 3px 8px rgba(230,81,0,.28); white-space:pre-wrap; }
+  
+  /* Markdown element styling in agent bubble */
+  .bubble h1, .bubble h2, .bubble h3, .bubble h4 { margin:0.8rem 0 0.4rem; color:#bf360c; font-weight:700; line-height:1.3; }
+  .bubble h1:first-child, .bubble h2:first-child, .bubble h3:first-child { margin-top:0; }
+  .bubble h1 { font-size:1.35rem; }
+  .bubble h2 { font-size:1.18rem; border-bottom:1px solid #f5ebe6; padding-bottom:.25rem; }
+  .bubble h3 { font-size:1.05rem; color:#d84315; }
+  .bubble p { margin:.45rem 0; line-height:1.62; }
+  .bubble p:first-child { margin-top:0; }
+  .bubble p:last-child { margin-bottom:0; }
+  .bubble ul, .bubble ol { margin:.45rem 0; padding-left:1.3rem; }
+  .bubble li { margin:.25rem 0; line-height:1.55; }
+  
+  /* Interactive Shopping Checklist styling */
+  .bubble ul.contains-task-list, .bubble ul:has(input[type="checkbox"]) { list-style:none; padding-left:.2rem; margin:.6rem 0; }
+  .bubble li:has(input[type="checkbox"]) { list-style:none; display:flex; align-items:center; gap:.65rem; padding:.3rem 0; margin:0; }
+  .bubble input[type="checkbox"] { appearance:none !important; -webkit-appearance:none !important; width:19px !important; min-width:19px !important; max-width:19px !important; height:19px !important; min-height:19px !important; max-height:19px !important; padding:0 !important; border:2px solid #e65100 !important; border-radius:5px !important; outline:none !important; cursor:pointer !important; flex:none !important; flex-shrink:0 !important; display:inline-flex !important; align-items:center !important; justify-content:center !important; transition:all .15s ease !important; background:#fff !important; box-shadow:none !important; margin:0 !important; }
+  .bubble input[type="checkbox"]:hover { border-color:#bf360c !important; background:#fff3e0 !important; }
+  .bubble input[type="checkbox"]:checked { background:#e65100 !important; border-color:#e65100 !important; }
+  .bubble input[type="checkbox"]:checked::before { content:"✓"; font-size:.82rem; font-weight:800; color:#fff; line-height:1; }
+  .bubble li.checked-item span { text-decoration:line-through; opacity:.55; color:#786f6a; }
+
+  .bubble strong { color:#bf360c; font-weight:600; }
+  .msg-row.user .bubble strong { color:#fff; }
+  .bubble hr { border:none; border-top:1px dashed #ebdcd0; margin:1rem 0; }
+  .bubble code { background:#fff3e0; color:#bf360c; padding:.15rem .35rem; border-radius:4px; font-size:.88rem; font-family:monospace; }
+  
+  /* Chef recommendation top badge inside bubble */
+  .bubble-badge { display:inline-flex; align-items:center; gap:.4rem; font-size:.74rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:#bf360c; background:#fff3e0; padding:.2rem .65rem; border-radius:20px; margin-bottom:.75rem; border:1px solid #ffd5b0; }
+  
+  /* Recipe metadata tag pills (Prep, Cook, Servings) */
+  .meta-tag-strip { display:flex; flex-wrap:wrap; gap:.45rem; margin:.65rem 0 .9rem; }
+  .meta-tag { background:#fbf5f0; border:1px solid #edd9cc; border-radius:12px; padding:.25rem .65rem; font-size:.8rem; font-weight:600; color:#4e342e; display:inline-flex; align-items:center; gap:.35rem; }
+  
+  /* Ingredients Pantry Card */
+  .pantry-card { background:#fffcf9; border:1.5px solid #f0cfb3; border-radius:12px; padding:.9rem 1.1rem; margin:.75rem 0 1rem; box-shadow:0 2px 6px rgba(0,0,0,.03); }
+  .pantry-header { font-size:.9rem; font-weight:700; color:#bf360c; margin-bottom:.55rem; display:flex; align-items:center; gap:.4rem; border-bottom:1px solid #fae7d9; padding-bottom:.35rem; }
+  .pantry-card ul { list-style:none; padding-left:0; margin:0; display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:.4rem .9rem; }
+  .pantry-card li { display:flex; align-items:flex-start; gap:.5rem; margin:0; font-size:.92rem; line-height:1.45; }
+  .pantry-bullet { color:#e65100; font-weight:bold; flex-shrink:0; font-size:1rem; }
+
+  /* Circular accent step badges for instructions */
+  .bubble ol { list-style:none; counter-reset:step-counter; padding-left:0; margin:.8rem 0; }
+  .bubble ol > li { counter-increment:step-counter; position:relative; padding-left:2.4rem; margin-bottom:.85rem; line-height:1.55; }
+  .bubble ol > li::before { content:counter(step-counter); position:absolute; left:0; top:1px; width:22px; height:22px; background:linear-gradient(135deg, #e65100, #d84315); color:#fff; border-radius:50%; font-size:.75rem; font-weight:700; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 4px rgba(230,81,0,.25); }
+
+  /* Auto-detected inline image */
+  .inline-generated-img { margin-top:.75rem; border-radius:12px; overflow:hidden; box-shadow:0 3px 10px rgba(0,0,0,.08); border:1px solid #ebdcd0; background:#fbf8f5; }
+  .inline-generated-img img { width:100%; max-height:420px; object-fit:cover; display:block; cursor:zoom-in; transition:transform .18s ease; }
+  .inline-generated-img img:hover { transform:scale(1.015); }
+  .inline-generated-caption { padding:.5rem .75rem; font-size:.82rem; color:#bf360c; font-weight:600; background:#fff8f2; display:flex; align-items:center; gap:.4rem; border-top:1px solid #ebdcd0; }
   
   /* When the reply is an A2UI card, drop the bubble chrome so the card stands alone. */
   .bubble.rich { background:transparent; border:none; padding:0; max-width:100%; white-space:normal; box-shadow:none; }
   
+  /* Message action buttons */
+  .msg-actions { display:flex; gap:.45rem; margin-top:.45rem; flex-wrap:wrap; }
+  .action-btn { background:#fff; border:1px solid #ebdcd0; border-radius:14px; padding:.25rem .7rem; font-size:.78rem; font-weight:600; color:#bf360c; cursor:pointer; display:inline-flex; align-items:center; gap:.3rem; transition:all .15s ease; box-shadow:0 1px 2px rgba(0,0,0,.03); }
+  .action-btn:hover { background:#ffe8d6; border-color:#ffb74d; transform:translateY(-1px); }
+  .action-btn:active { transform:translateY(0); }
+
   /* Cooking / Thinking indicator */
   .cooking-loader { display:inline-flex; align-items:center; gap:.55rem; color:#bf360c; font-weight:500; font-size:.9rem; }
   .cooking-icon { font-size:1.15rem; animation:stirPot 1.2s infinite ease-in-out; display:inline-block; transform-origin:center; }
@@ -71,8 +130,20 @@
   .a2text.a2-h4 { font-size:.98rem; font-weight:600; color:#4e342e; }
   .a2text.a2-caption { font-size:.84rem; color:var(--text-muted); }
   .a2divider { border:none; border-top:1px solid #ebdcd0; margin:.5rem 0; width:100%; }
-  .a2img { max-width:100%; border-radius:10px; display:block; box-shadow:0 2px 6px rgba(0,0,0,.08); }
+  .a2img { max-width:100%; border-radius:10px; display:block; box-shadow:0 2px 6px rgba(0,0,0,.08); cursor:zoom-in; transition:transform .18s ease, box-shadow .18s ease; }
+  .a2img:hover { transform:scale(1.015); box-shadow:0 5px 15px rgba(0,0,0,.12); }
   .material-symbols-outlined { font-family:'Material Symbols Outlined'; font-size:1.25rem; line-height:1; vertical-align:middle; color:var(--accent); }
+
+  /* Lightbox Modal */
+  .lightbox-modal { display:none; position:fixed; z-index:9999; top:0; left:0; width:100vw; height:100vh; background:rgba(20,15,13,.88); backdrop-filter:blur(6px); flex-direction:column; align-items:center; justify-content:center; padding:1.5rem; }
+  .lightbox-modal.active { display:flex; animation:fadeIn .2s ease-out; }
+  .lightbox-content { position:relative; max-width:92vw; max-height:86vh; display:flex; flex-direction:column; align-items:center; }
+  .lightbox-img { max-width:100%; max-height:78vh; object-fit:contain; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,.5); border:1px solid rgba(255,255,255,.15); }
+  .lightbox-bar { display:flex; gap:.75rem; margin-top:.9rem; align-items:center; }
+  .lightbox-btn { background:#fff; color:#2c2523; border:none; border-radius:8px; padding:.5rem 1rem; font-size:.85rem; font-weight:600; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:.4rem; transition:background .15s ease; box-shadow:0 2px 6px rgba(0,0,0,.2); }
+  .lightbox-btn:hover { background:#ffe8d6; }
+  .lightbox-close { position:absolute; top:-40px; right:0; background:transparent; border:none; color:#fff; font-size:2rem; cursor:pointer; line-height:1; padding:.2rem; transition:transform .15s ease; }
+  .lightbox-close:hover { transform:scale(1.15); color:#ffab91; }
 </style>
 </head>
 <body>
@@ -94,6 +165,18 @@
     <input id="input" placeholder="Ask Sous-Chef for a recipe, shopping list, or plating idea…" autocomplete="off" autofocus>
     <button class="send-btn">Send</button>
   </form>
+</div>
+
+<!-- Image Lightbox Modal -->
+<div id="lightbox" class="lightbox-modal">
+  <div class="lightbox-content">
+    <button class="lightbox-close" id="lightbox-close" aria-label="Close">&times;</button>
+    <img id="lightbox-img" class="lightbox-img" src="" alt="Plating visual">
+    <div class="lightbox-bar">
+      <a id="lightbox-open" class="lightbox-btn" target="_blank" rel="noopener noreferrer">↗ Open Original</a>
+      <button id="lightbox-copy" class="lightbox-btn">📋 Copy Image URL</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -228,13 +311,146 @@ function renderReply(b, parts) {
   const a2ui = parts.filter(p => p && p.kind === "a2ui" && p.data).map(p => p.data);
 
   const textStr = texts.join("\n").trim();
-  if (textStr) b.appendChild(el("div", null, textStr));
+  if (textStr) {
+    const textContainer = el("div", "agent-text-body");
+    
+    // Check if the response contains direct image links (e.g. from GCS / TheMealDB)
+    const imgUrlMatch = textStr.match(/https?:\/\/[^\s"'<>]+\.(?:png|jpg|jpeg|webp)/i);
+    
+    // Render markdown using marked.js if available, falling back safely to formatted text
+    if (window.marked && typeof window.marked.parse === "function") {
+      textContainer.innerHTML = window.marked.parse(textStr);
+
+      // 1. Prepend Chef Recipe Recommendation badge
+      const badge = el("div", "bubble-badge", "👨‍🍳 Kitchen Recommendation");
+      textContainer.insertBefore(badge, textContainer.firstChild);
+
+      // 2. Wrap Ingredients lists into a Pantry Card box
+      const headings = textContainer.querySelectorAll("h1, h2, h3, h4, strong");
+      headings.forEach((h) => {
+        if (/ingredients/i.test(h.textContent || "")) {
+          let next = h.nextElementSibling;
+          while (next && next.tagName !== "UL" && !/h[1-4]/i.test(next.tagName)) {
+            next = next.nextElementSibling;
+          }
+          if (next && next.tagName === "UL" && !next.closest(".pantry-card")) {
+            const pantryCard = el("div", "pantry-card");
+            const pantryHeader = el("div", "pantry-header", "🛒 Ingredients & Pantry Checklist");
+            pantryCard.appendChild(pantryHeader);
+            
+            // Format list items with subtle orange bullets
+            next.querySelectorAll("li").forEach(li => {
+              const b = el("span", "pantry-bullet", "•");
+              li.prepend(b);
+            });
+            
+            next.parentNode.insertBefore(pantryCard, next);
+            pantryCard.appendChild(next);
+          }
+        }
+      });
+
+      // 3. Format Servings / Prep / Cook time into tag pills
+      const paras = textContainer.querySelectorAll("p");
+      paras.forEach((p) => {
+        const t = p.textContent || "";
+        if (/(prep time|cook time|servings)/i.test(t) && t.includes("|")) {
+          const tags = t.split("|").map(s => s.trim()).filter(Boolean);
+          const strip = el("div", "meta-tag-strip");
+          tags.forEach(tag => {
+            let icon = "⏱️";
+            if (/serving/i.test(tag)) icon = "🍽️";
+            else if (/prep/i.test(tag)) icon = "🔪";
+            else if (/cook/i.test(tag)) icon = "🔥";
+            strip.appendChild(el("span", "meta-tag", `${icon} ${tag}`));
+          });
+          p.parentNode.replaceChild(strip, p);
+        }
+      });
+      // 4. Transform checklist items (☐, [ ], or marked task lists) into interactive checkboxes
+      textContainer.querySelectorAll("li").forEach(li => {
+        const existingInput = li.querySelector('input[type="checkbox"]');
+        if (existingInput) {
+          existingInput.removeAttribute("disabled");
+          existingInput.addEventListener("change", () => {
+            li.classList.toggle("checked-item", existingInput.checked);
+          });
+        } else if (/^[☐\u2610]|^\s*\[\s*\]/i.test(li.textContent || "")) {
+          const cleanText = li.innerHTML.replace(/^[☐\u2610]|^\s*\[\s*\]\s*/i, "").trim();
+          li.innerHTML = `<input type="checkbox" aria-label="Check item"> <span>${cleanText}</span>`;
+          const chk = li.querySelector('input[type="checkbox"]');
+          chk.addEventListener("change", () => {
+            li.classList.toggle("checked-item", chk.checked);
+          });
+        }
+      });
+    } else {
+      textContainer.textContent = textStr;
+    }
+    b.appendChild(textContainer);
+
+    // If an image URL is present in the text but not already an <img>, show a dedicated plating preview
+    if (imgUrlMatch && !textContainer.querySelector("img")) {
+      const imgCard = el("div", "inline-generated-img");
+      const img = el("img");
+      img.src = imgUrlMatch[0];
+      img.alt = "Generated dish plating visual";
+      const cap = el("div", "inline-generated-caption", "📸 Plating & Presentation Preview (Click to Zoom)");
+      imgCard.appendChild(img);
+      imgCard.appendChild(cap);
+      b.appendChild(imgCard);
+    }
+  }
 
   if (a2ui.length) {
     b.classList.add("rich");
     if (!renderSurface(a2ui, b)) b.appendChild(el("div", null, flattenText(a2ui) || "(no card content)"));
   }
   if (!b.childNodes.length) b.textContent = "(no response)";
+  
+  // Attach quick utility actions (Copy Recipe / Export Checklist) to agent responses
+  const msgContent = b.parentElement;
+  if (msgContent && msgContent.classList.contains("msg-content")) {
+    const actions = el("div", "msg-actions");
+    const copyBtn = el("button", "action-btn", "📋 Copy Text");
+    copyBtn.type = "button";
+    copyBtn.addEventListener("click", async () => {
+      const fullText = b.innerText.trim();
+      if (!fullText) return;
+      try {
+        await navigator.clipboard.writeText(fullText);
+        copyBtn.textContent = "✓ Copied!";
+        setTimeout(() => { copyBtn.textContent = "📋 Copy Text"; }, 2000);
+      } catch (err) {
+        copyBtn.textContent = "Error";
+      }
+    });
+
+    const exportBtn = el("button", "action-btn", "🛒 Export Checklist");
+    exportBtn.type = "button";
+    exportBtn.addEventListener("click", async () => {
+      const fullText = b.innerText.trim();
+      if (!fullText) return;
+      // Convert lines starting with -, *, or ingredients into a clean Markdown / text checklist
+      const lines = fullText.split("\n").map(l => l.trim()).filter(Boolean);
+      const checklist = lines.map(line => {
+        if (/^[-*•]/.test(line)) return line.replace(/^[-*•]\s*/, "[ ] ");
+        return line;
+      }).join("\n");
+      try {
+        await navigator.clipboard.writeText(checklist);
+        exportBtn.textContent = "✓ Checklist Copied!";
+        setTimeout(() => { exportBtn.textContent = "🛒 Export Checklist"; }, 2000);
+      } catch (err) {
+        exportBtn.textContent = "Error";
+      }
+    });
+
+    actions.appendChild(copyBtn);
+    actions.appendChild(exportBtn);
+    msgContent.appendChild(actions);
+  }
+
   log.scrollTop = log.scrollHeight;
 }
 
@@ -270,6 +486,57 @@ document.querySelectorAll(".chip").forEach((btn) => {
     input.value = btn.getAttribute("data-prompt") || "";
     form.dispatchEvent(new Event("submit", { cancelable: true }));
   });
+});
+
+// Image Lightbox & Zoom Modal logic
+const lightbox = document.getElementById("lightbox");
+const lightboxImg = document.getElementById("lightbox-img");
+const lightboxOpen = document.getElementById("lightbox-open");
+const lightboxCopy = document.getElementById("lightbox-copy");
+const lightboxClose = document.getElementById("lightbox-close");
+
+function openLightbox(url, alt) {
+  if (!url) return;
+  lightboxImg.src = url;
+  lightboxImg.alt = alt || "Plating visualization";
+  lightboxOpen.href = url;
+  lightboxCopy.textContent = "📋 Copy Image URL";
+  lightbox.classList.add("active");
+}
+
+function closeLightbox() {
+  lightbox.classList.remove("active");
+  lightboxImg.src = "";
+}
+
+// Delegate clicks on any image in the chat log (A2UI cards or standard images)
+log.addEventListener("click", (e) => {
+  const target = e.target;
+  if (target && target.tagName === "IMG") {
+    openLightbox(target.src, target.alt);
+  }
+});
+
+lightboxClose.addEventListener("click", closeLightbox);
+lightbox.addEventListener("click", (e) => {
+  if (e.target === lightbox) closeLightbox();
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && lightbox.classList.contains("active")) {
+    closeLightbox();
+  }
+});
+
+lightboxCopy.addEventListener("click", async () => {
+  if (!lightboxImg.src) return;
+  try {
+    await navigator.clipboard.writeText(lightboxImg.src);
+    lightboxCopy.textContent = "✓ Copied!";
+    setTimeout(() => { lightboxCopy.textContent = "📋 Copy Image URL"; }, 2000);
+  } catch (err) {
+    lightboxCopy.textContent = "Error copying";
+  }
 });
 </script>
 </body>
